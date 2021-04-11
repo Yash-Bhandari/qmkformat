@@ -1,9 +1,10 @@
 import copy
 import json
-from dataclasses import dataclass
-from collections import defaultdict
 import math
+from collections import defaultdict
+from dataclasses import dataclass
 from typing import Dict, List
+
 from icecream import ic
 
 
@@ -61,12 +62,23 @@ class Keyboard:
 
         return Keyboard(keys, kb_info["width"], kb_info["height"])
 
+    def create_layout(self, key_codes: List[str]) -> 'Keyboard':
+        """
+        Returns a deep copy of this keyboard whose keys have been intialized with the given key codes.
+        The provided key codes should be in the same order as the keys used to create this Keyboard.
+        """ 
+        assert len(key_codes) == len(self.keys), f"There are {len(key_codes)} key_codes but only {len(self.keys)} keys"
+        layout = copy.deepcopy(self)
+        for key, key_code in zip(layout.keys, key_codes):
+            key.code = key_code
+        return layout
+
     def __post_init__(self):
         self.rows = {}
         self.cols = {}
         for key in self.keys:
             # round to the nearest half
-            key.col = round(2*key.x)/2
+            key.col = round(2 * key.x) / 2
             # Intense row stagger is less common and difficult to display as a string,
             # so every row must be a whole number
             key.row = int(key.y)
