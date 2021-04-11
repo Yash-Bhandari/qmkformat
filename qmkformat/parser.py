@@ -1,4 +1,4 @@
-from icecream import ic
+import sys
 import re
 from typing import List
 
@@ -48,15 +48,25 @@ def get_layout_keys(layout_strs: List[str]) -> List[List[str]]:
     return layout_keys
 
 
-def parse_layout(lines: str):
-    lines = get_keymap(lines)
+def parse_layout(keymap_c: str):
+    """
+    Parses C code from a keymap.c file into a 2d list with the keys in each layer.
+    """
+    lines = get_keymap(keymap_c)
     lines = remove_excess_white_space(lines)
     layout_strs = get_layouts_strs(lines)
     return get_layout_keys(layout_strs)
 
 
-rows = [12, 12, 14, 6]
+def read_and_parse_layout(path: str):
+    lines = get_lines(path)
+    return parse_layout(lines)
 
-lines = get_lines("old.c")
-layout_keys = parse_layout(lines)
-
+if __name__ == '__main__':
+    path = sys.argv[1]
+    parsed = read_and_parse_layout(path)
+    for i, layout in enumerate(parsed):
+        print("Layer #:", i)
+        print('-'*40)
+        print(layout)
+        print('-'*40)
