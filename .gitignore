@@ -1,4 +1,3 @@
 .vscode
 
-qmkformat/*.c
 __pycache__

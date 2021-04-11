@@ -4,8 +4,13 @@ from typing import List
 
 
 def get_lines(path: str):
-    with open(path) as f:
-        return "".join(f.readlines())
+    try:
+        with open(path) as f:
+            return "".join(f.readlines())
+    except UnicodeDecodeError:
+        with open(path, encoding='utf8') as f:
+            return "".join(f.readlines())
+
 
 
 def get_keymap(lines: str):
@@ -42,10 +47,28 @@ def get_layouts_strs(lines: str) -> List[str]:
 def get_layout_keys(layout_strs: List[str]) -> List[List[str]]:
     layout_keys = []
     for layout_str in layout_strs:
-        layout_keys.append(
-            [re.search("[\w\(\)]+", key).group(0) for key in layout_str.split(",")]
-        )
+        keys = [re.search(r"[\w\(\)]+", key).group(0) for key in layout_str.split(",")]
+
+        # the regex above will break up a keycode like 'MO(ALT,2)' into 'MO(ALT' and '2)',
+        # so now we glue those keycodes back together
+        merged_keys = merge_split_consecutive_keycodes(keys)
+        layout_keys.append(merged_keys)
     return layout_keys
+
+def merge_split_consecutive_keycodes(keys: List[str]):
+    incomplete_keycode=''
+    merged_keys = []
+    for key in keys:
+        if incomplete_keycode:
+            key = f'{incomplete_keycode},{key}'
+            incomplete_keycode = ''
+        if key.count('(') == key.count(')'):
+            merged_keys.append(key)
+        else:
+            incomplete_keycode = key 
+    return merged_keys
+
+
 
 
 def parse_layout(keymap_c: str):
